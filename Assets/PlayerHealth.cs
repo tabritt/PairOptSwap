@@ -10,12 +10,16 @@ public class PlayerHealth : MonoBehaviour
     public Text healthText;
     public Slider healthSlider;
 
+    private ResetPlayer resetPlayer;
+
     void Start()
     {
         currentHealth = maxHealth;
 
         healthSlider.maxValue = maxHealth;
         healthSlider.value = currentHealth;
+
+        resetPlayer = GetComponent<ResetPlayer>();
 
         UpdateHealthUI();
     }
@@ -26,15 +30,28 @@ public class PlayerHealth : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            Die();
+            resetPlayer.ResetPosition(); // Reset the player's position to the starting position
+
+            // Die();
         }
     }
     // Restore health when picking up a health item
     public void RestoreHealth(int amount)
     {
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);  // Ensure health doesn't exceed max
+    }
+
+    // Central health adjustment method to handle both damage and healing
+    public void AdjustHealth(int amount, bool isDamage)
+    {
+        if (isDamage)
+            TakeDamage(amount);
+        else
+            RestoreHealth(amount); // Positive for healing
+
         healthSlider.value = currentHealth;  // Update the slider
         UpdateHealthUI();  // Update the text display
+
     }
 
     private void UpdateHealthUI()
@@ -44,8 +61,8 @@ public class PlayerHealth : MonoBehaviour
             healthText.text = "Health: " + currentHealth + "/" + maxHealth;
         }
     }
-    void Die()
-    {
-        Destroy(gameObject);
-    }
+    // void Die()
+    // {
+    //     Destroy(gameObject);
+    // }
 }
