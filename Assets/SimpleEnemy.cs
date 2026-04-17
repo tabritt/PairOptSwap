@@ -17,7 +17,7 @@ public class SimpleEnemy : MonoBehaviour
         startPos = transform.position;  // Save the starting position
     }
 
-    private void Update()
+    private void FixedUpdate()
     {
         Patrol();
     }
@@ -53,7 +53,7 @@ public class SimpleEnemy : MonoBehaviour
         {
             PlayerHealth playerHealth = collision.gameObject.GetComponent<PlayerHealth>();
             if (playerHealth != null)
-                playerHealth.RestoreHealth(-damageToPlayer); // Subtract health to player but same function
+                playerHealth.AdjustHealth(damageToPlayer, true); // Subtract health from player
 
             Destroy(gameObject);
         }

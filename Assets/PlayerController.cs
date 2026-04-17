@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     // add implulse variable
     public float jumpImpulse = 1f;
 
-    
+    public int amountOfJumps = 1;
 
 
 
@@ -24,13 +24,13 @@ public class PlayerController : MonoBehaviour
     private InputAction attackAction;
 
     //if the player is grounded.
-    private bool isGrounded;
+    public bool isGrounded;
 
-    // Timer to check if player is grounded
-    private float groundTimer = 0f;
+    // // Timer to check if player is grounded
+    // private float groundTimer = 0f;
 
-    // idk why i decided to do it like this but here we are
-    private float lastYPosition;
+    // // idk why i decided to do it like this but here we are
+    // private float lastYPosition;
 
     // Layer Mask so that i can raytrace (is that optimal in unity?, unreal is line trace and its 'okay' as long as its not often or complex) attack
     public LayerMask attackMask;
@@ -80,20 +80,31 @@ public class PlayerController : MonoBehaviour
             facingDirection = -1;
         //if sprite will flip rotation here 
        
+        isGrounded = isGroundedCheck();
+
         //Ground check
-        if (Mathf.Abs(rb.linearVelocity.y) < 0.1f)
-        {
-            if (rb.position.y == lastYPosition)
-                groundTimer += Time.deltaTime;
-            else
-                groundTimer = 0f;
+        // if (Mathf.Abs(rb.linearVelocity.y) < 0.1f)
+        // {
+        //     // if (rb.position.y == lastYPosition)
+        //     //     groundTimer += Time.deltaTime;
+        //     // else
+        //     //     groundTimer = 0f;
 
-            if (groundTimer >= 0.3f)
-                isGrounded = true;
-        }
+        //     // if (groundTimer >= 0.3f)
+        //     //     isGrounded = true;
+        // }
 
-        lastYPosition = rb.position.y;
+        // lastYPosition = rb.position.y;
     }
+
+    // Instead of timer determining when player can jump, use a raycast so player can jump as soon as they touch the ground, 
+    // and not have to wait for a timer to run out. Also should be more reliable than checking velocity and position.
+    private bool isGroundedCheck()
+    {
+        RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.5f, Vector2.down, 0.1f, LayerMask.GetMask("Ground", "Attack"));
+        return hit.collider != null;
+    }
+
     void Jump()
     {
         // Apply an impulse if the player is grounded
@@ -101,7 +112,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.AddForce(Vector2.up * jumpImpulse, ForceMode2D.Impulse);  // Apply an upward impulse force
             isGrounded = false;  // Set isGrounded to false when jumping
-            groundTimer = 0f;  // Reset the grounded timer when jumping
+            //  groundTimer = 0f;  // Reset the grounded timer when jumping
         }
     }
 

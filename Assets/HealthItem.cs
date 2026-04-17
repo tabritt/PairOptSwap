@@ -13,7 +13,7 @@ public class HealthItem : MonoBehaviour
             PlayerHealth playerHealth = other.GetComponent<PlayerHealth>();
             if (playerHealth != null)
             {
-                playerHealth.RestoreHealth(healthAmount);
+                playerHealth.AdjustHealth(healthAmount, false); // false indicates healing
                 Destroy(gameObject);  // Destroy the health item after it is picked up
             }
         }
