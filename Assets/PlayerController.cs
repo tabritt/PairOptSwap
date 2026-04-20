@@ -1,4 +1,3 @@
-using UnityEditor.Timeline.Actions;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -16,7 +15,8 @@ public class PlayerController : MonoBehaviour
 
     public int amountOfJumps = 1;
 
-
+    private PlatformVelocity currentPlatform;
+    private Vector3 lastPlatformPosition;
 
     // Reference to the InputAction object
     private InputSystem_Actions controls;
@@ -71,8 +71,9 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         // Move the player
-        rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
+        float platformVelocityX = currentPlatform != null ? currentPlatform.velocity.x : 0f;
 
+     
         // Update facing direction if moving
         if (moveInput.x > 0)
             facingDirection = 1;
@@ -99,12 +100,41 @@ public class PlayerController : MonoBehaviour
 
     // Instead of timer determining when player can jump, use a raycast so player can jump as soon as they touch the ground, 
     // and not have to wait for a timer to run out. Also should be more reliable than checking velocity and position.
+
+    void FixedUpdate()
+    {
+        float platformVelocityX = currentPlatform != null ? currentPlatform.velocity.x : 0f;
+
+        rb.linearVelocity = new Vector2(
+            moveInput.x * moveSpeed + platformVelocityX,
+            rb.linearVelocity.y
+        );
+    }
     private bool isGroundedCheck()
     {
-        RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.5f, Vector2.down, 0.1f, LayerMask.GetMask("Ground", "Attack"));
-        return hit.collider != null;
-    }
+        LayerMask groundAndAttackLayerMask = LayerMask.GetMask("Ground", "Attack");
 
+        RaycastHit2D hit = Physics2D.CircleCast(
+            transform.position,
+            0.5f, // Adjust this as needed for your player size
+            Vector2.down,
+            0.1f, // Adjust this distance based on platform thickness
+             groundAndAttackLayerMask
+        );
+
+        if (hit.collider != null)
+        {
+            // Optionally, check if the hit collider belongs to a specific layer
+            if ((groundAndAttackLayerMask & (1 << hit.collider.gameObject.layer)) != 0)
+            {
+                currentPlatform = hit.collider.GetComponent<PlatformVelocity>();  // Get the PlatformVelocity component if available
+                return true;  // The player is grounded or standing on an "Attack" layer object
+            }
+        }
+
+        currentPlatform = null;
+        return false;
+    }
     void Jump()
     {
         // Apply an impulse if the player is grounded
